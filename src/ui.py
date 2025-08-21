@@ -1,5 +1,6 @@
 import streamlit as st
-from rag_agent import load_documents, build_vectorstore, create_agent
+from rag_agent import build_vectorstore, create_agent
+from helper import load_documents
 
 st.set_page_config(page_title="Grant's Codex Agent", page_icon="📖")
 

@@ -43,3 +43,32 @@ Answer:"""
             return f"Sorry, I encountered an error: {str(e)}"
     
     return agent
+
+def build_vectorstore(docs):
+    """Build FAISS vector store from documents"""
+    if not docs:
+        print("No documents provided")
+        return None, []
+    
+    if embedder is None:
+        print("Embedder not available")
+        return None, []
+    
+    texts = [d.page_content for d in docs]
+    
+    try:
+        embeddings = embedder.encode(texts)
+        dim = embeddings.shape[1]
+        index = faiss.IndexFlatL2(dim)
+        index.add(embeddings.astype('float32'))  # Ensure float32 for FAISS
+        return index, texts
+    except Exception as e:
+        print(f"Error building vector store: {e}")
+        return None, []
+
+# Initialize Ollama client
+try:
+    ollama_client = Client()
+except Exception as e:
+    print(f"Warning: Could not initialize Ollama client: {e}")
+    ollama_client = None

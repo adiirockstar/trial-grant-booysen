@@ -1,5 +1,6 @@
 streamlit
+sentence-transformers>=2.2.0
 faiss-cpu
-pypdf
-sentence-transformers
 groq
+requests
+urllib3
