@@ -6,8 +6,20 @@ from pathlib import Path
 from sentence_transformers import SentenceTransformer
 import faiss
 
-load_dotenv('../.env')
-api_key = os.getenv("GROQ_API_KEY")
+# At the top of rag_agent.py
+import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Load and debug .env
+env_path = Path(__file__).parent.parent / '.env'
+print(f"Looking for .env at: {env_path}")
+print(f"File exists: {env_path.exists()}")
+
+load_dotenv(env_path)
+
+api_key = os.getenv('GROQ_API_KEY')
+print(f"Loaded API key: {api_key[:10]}..." if api_key else "No API key found")
 
 groq_client = None
 try:

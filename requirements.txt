@@ -4,3 +4,6 @@ faiss-cpu
 groq
 requests
 urllib3
+PyPDF2
+python-docx
+python-dotenv

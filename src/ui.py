@@ -5,9 +5,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-load_dotenv('../.env')
-api_key = os.getenv("GROQ_API_KEY")
-
+load_dotenv('.env')
 st.set_page_config(page_title="Grant's Codex Agent", page_icon="📖")
 
 @st.cache_resource
