@@ -1,0 +1,5 @@
+streamlit
+faiss-cpu
+pypdf
+sentence-transformers
+ollama  # Python client for local models

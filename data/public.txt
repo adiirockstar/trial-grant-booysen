@@ -1,0 +1,21 @@
+About: "As a fourth-year Data Science student at Stellenbosch University, I am passionate about transforming complex data into meaningful insights that drive real-world impact. My enthusiasm for data science stems from its versatility; I’m motivated by the opportunity to apply my skills across diverse industries to solve critical business problems."
+Post: " Exploring Reinforcement Learning with Unity's Hummingbird ML Agent Tutorial 
+
+As part of my ongoing studies in data science at Stellenbosch University, I've delved into Unity's Hummingbird ML Agent tutorial, an excellent introduction to the world of reinforcement learning (RL). This follow-along course teaches the fundamentals of training intelligent agents using RL techniques within the Unity environment.
+
+ What I Learned:
+Reinforcement Learning Basics: Grasped the core concepts of RL, including agents, environments, actions, rewards, and the goal of maximizing cumulative rewards over time.
+
+ML Agent Setup: Learned the idea of configuring the ML Agent component in Unity projects, setting up observation spaces and action spaces to enable agent learning. I quickly realised how tricky this could become!
+
+Training and Testing: Understood the process of training agents through simulation, collecting data, and iteratively improving their performance based on feedback from their environment.
+
+Application to Data Science: Recognized the direct applicability of RL techniques in data science, from optimizing algorithms to decision-making models and beyond.
+
+Evaluation using TensorBoard: By using TensorBoard, I was able to monitor various metrics such as loss, accuracy, and learning rate during the training of my neural network. This allowed me to fine-tune the model by adjusting hyperparameters, optimizing the training process, and identifying potential issues. The interactive visualizations provided by TensorBoard greatly enhanced my understanding of the inner workings of the neural network, enabling me to make data-driven decisions and ultimately improving the overall performance of the model.
+
+While this tutorial follows Unity's guidance and is not my original creation, it has been an invaluable resource in enhancing my understanding of reinforcement learning and its potential within the data science field. 🤖📊
+
+
+Visual Highlights: Attached are screenshots showcasing the agent's learning progression, demonstrating the practical application of theoretical RL concepts. Note the models were trained on an 11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz  2.42 GHz
+"
