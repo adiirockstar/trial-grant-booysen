@@ -1,34 +1,45 @@
-from sentence_transformers import SentenceTransformer
-import faiss
-from ollama import Client
+
+from groq import Groq
 import os
 
-# Embeddings
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
+# Initialize Groq client
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-def build_vectorstore(docs):
-    texts = [d.page_content for d in docs]
-    embeddings = embedder.encode(texts)
-    dim = embeddings.shape[1]
-    index = faiss.IndexFlatL2(dim)
-    index.add(embeddings)
-    return index, texts
-
-# Local Ollama client
-ollama_client = Client()
-
-def create_agent(index, texts):
+def create_agent(vectorstore_data):
+    """Create agent using Groq's Llama"""
+    if vectorstore_data is None:
+        return lambda question: "Sorry, the knowledge base is not available."
+    
+    index, texts = vectorstore_data
+    
     def agent(question: str) -> str:
-        q_emb = embedder.encode([question])
-        D, I = index.search(q_emb, k=3)
-        context = "\n\n".join([texts[i] for i in I[0]])
-        prompt = f"""You are Grant's personal Codex Agent. 
-Answer based on the context below, in his own voice:
+        if not os.getenv("GROQ_API_KEY"):
+            return "Please set GROQ_API_KEY environment variable"
+        
+        try:
+            # Search for relevant documents
+            q_emb = embedder.encode([question])
+            D, I = index.search(q_emb.astype('float32'), k=3)
+            context = "\n\n".join([texts[i] for i in I[0] if i < len(texts)])
+            
+            prompt = f"""You are Grant's personal Codex Agent. Answer based on the context below, in his own voice:
 
 {context}
 
 Question: {question}
 Answer:"""
-        response = ollama_client.chat(model="llama3", messages=[{"role": "user", "content": prompt}])
-        return response['message']['content']
+            
+            # Use Groq's Llama model
+            response = groq_client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model="llama3-8b-8192",  # or "llama3-70b-8192" for larger model
+                max_tokens=500,
+                temperature=0.7
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            return f"Sorry, I encountered an error: {str(e)}"
+    
     return agent
