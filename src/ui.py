@@ -22,7 +22,7 @@ def mode_instructions(mode: str) -> str:
 
 
 @st.cache_resource
-def init_agent():
+def init_agent(mode):
     """Initialize the RAG agent with error handling"""
     try:
         # Check if data directory exists
@@ -58,7 +58,7 @@ st.title("📖 Grant's Codex Agent")
 st.write("Ask me anything about my experience, skills, and values!")
 mode = load_frontend()
 
-agent = init_agent()
+agent = init_agent(mode=mode)
 
 if agent is None:
     st.error("Failed to initialize the agent. Please check your setup:")
