@@ -36,7 +36,7 @@ except Exception as e:
     print(f"Failed to load embedder: {e}")
     embedder = None
 
-def create_agent(vectorstore_data, mode):
+def create_agent(vectorstore_data):
     """Create agent using Groq's Llama"""
     if vectorstore_data is None:
         return lambda question: "Sorry, the knowledge base is not available."
