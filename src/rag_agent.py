@@ -1,9 +1,20 @@
 
 from groq import Groq
 import os
+from dotenv import load_dotenv
+from pathlib import Path
+from sentence_transformers import SentenceTransformer
+import faiss
 
-# Initialize Groq client
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+load_dotenv('../.env')
+api_key = os.getenv("GROQ_API_KEY")
+
+groq_client = None
+try:
+    embedder = SentenceTransformer("all-MiniLM-L6-v2")
+except Exception as e:
+    print(f"Failed to load embedder: {e}")
+    embedder = None
 
 def create_agent(vectorstore_data):
     """Create agent using Groq's Llama"""
@@ -16,6 +27,9 @@ def create_agent(vectorstore_data):
         if not os.getenv("GROQ_API_KEY"):
             return "Please set GROQ_API_KEY environment variable"
         
+        # Initialize Groq client
+        groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        print("Successfully loaded Groq!")
         try:
             # Search for relevant documents
             q_emb = embedder.encode([question])
@@ -24,10 +38,10 @@ def create_agent(vectorstore_data):
             
             prompt = f"""You are Grant's personal Codex Agent. Answer based on the context below, in his own voice:
 
-{context}
+            {context}
 
-Question: {question}
-Answer:"""
+            Question: {question}
+            Answer:"""
             
             # Use Groq's Llama model
             response = groq_client.chat.completions.create(
@@ -53,7 +67,7 @@ def build_vectorstore(docs):
     if embedder is None:
         print("Embedder not available")
         return None, []
-    
+        
     texts = [d.page_content for d in docs]
     
     try:
@@ -65,10 +79,3 @@ def build_vectorstore(docs):
     except Exception as e:
         print(f"Error building vector store: {e}")
         return None, []
-
-# Initialize Ollama client
-try:
-    ollama_client = Client()
-except Exception as e:
-    print(f"Warning: Could not initialize Ollama client: {e}")
-    ollama_client = None

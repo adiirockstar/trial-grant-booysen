@@ -1,3 +1,5 @@
+from pathlib import Path
+
 def load_documents(data_dir):
     """Load documents from a directory"""
     docs = []
