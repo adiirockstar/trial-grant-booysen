@@ -34,14 +34,16 @@ except Exception as e:
     print(f"Failed to load embedder: {e}")
     embedder = None
 
+
+
 def create_agent(vectorstore_data, mode):
     """Create agent using Groq's Llama"""
-    if vectorstore_data is None:
+    if vectorstore_data is None or vectorstore_data[0] is None:
         return lambda question: "Sorry, the knowledge base is not available."
     
     index, texts = vectorstore_data
     
-    def agent(question: str) -> str:
+    def agent(question: str, mode = mode) -> str:
         if not os.getenv("GROQ_API_KEY"):
             return "Please set GROQ_API_KEY environment variable"
         
@@ -59,7 +61,7 @@ def create_agent(vectorstore_data, mode):
 
             Mode Instructions: {mode_instruction}
             {context}
-
+            Answer as Grant in first person, based on the context provided.
             Question: {question}
             Answer:"""
             
@@ -79,23 +81,53 @@ def create_agent(vectorstore_data, mode):
     return agent
 
 def build_vectorstore(docs):
-    """Build FAISS vector store from documents"""
+    """Build FAISS vector store from documents (works with in-memory docs)"""
     if not docs:
-        print("No documents provided")
+        print("No documents provided to build_vectorstore")
         return None, []
     
     if embedder is None:
-        print("Embedder not available")
+        print("Embedder not available for vectorstore")
         return None, []
-        
-    texts = [d.page_content for d in docs]
     
     try:
-        embeddings = embedder.encode(texts)
+        # Extract text content from documents
+        texts = []
+        for doc in docs:
+            if hasattr(doc, 'page_content'):
+                # Split long documents into chunks
+                content = doc.page_content
+                chunk_size = 1000
+                overlap = 200
+                
+                if len(content) <= chunk_size:
+                    texts.append(content)
+                else:
+                    # Split into overlapping chunks
+                    for i in range(0, len(content), chunk_size - overlap):
+                        chunk = content[i:i + chunk_size]
+                        if len(chunk.strip()) > 50:  # Minimum chunk size
+                            texts.append(chunk)
+            else:
+                print(f"Document missing page_content attribute: {doc}")
+        
+        if not texts:
+            print("No valid text content extracted from documents")
+            return None, []
+        
+        print(f"Processing {len(texts)} text chunks for vector store")
+        
+        # Create embeddings
+        embeddings = embedder.encode(texts, show_progress_bar=True)
+        
+        # Build FAISS index
         dim = embeddings.shape[1]
         index = faiss.IndexFlatL2(dim)
-        index.add(embeddings.astype('float32'))  # Ensure float32 for FAISS
+        index.add(embeddings.astype('float32'))
+        
+        print(f"Successfully built vector store with {len(texts)} chunks")
         return index, texts
+        
     except Exception as e:
         print(f"Error building vector store: {e}")
         return None, []
@@ -107,16 +139,17 @@ def build_system_prompt(mode: str) -> str:
         "- Speak in first person ('I', 'my') as if you are Grant.\n"
         "- Ground answers in the provided context from my documents.\n"
         "- If context is insufficient, say what you need.\n"
+        "- Stay true to Grant's voice and experiences\n"
     )
     return base + f"\nCurrent Mode: {mode}\n"
 
 def get_mode_instruction(mode: str) -> str:
     """Get specific instructions for each mode"""
     return {
-        "Interview":  "Answer concisely and professionally. Prioritize skills, impact, clarity.",
-        "Story":      "Answer with a short narrative and an example grounded in the docs.",
-        "FastFacts":  "Answer in tight bullet points (max 5).",
-        "HumbleBrag": "Be confident and specific about achievements; avoid exaggeration.",
-        "Reflect":    "Self-assess energy, collaboration style, and growth areas with candor.",
-        "Projects":    "Answer exclusively about the projects I have done with excitement.",
+        "Interview":  "Answer concisely and professionally. Prioritize skills, impact, clarity using my mannerisms.",
+        "Story":      "Answer with a short narrative and an example grounded in the docs using my mannerisms.",
+        "FastFacts":  "Answer in tight bullet points (max 5) using my mannerisms.",
+        "HumbleBrag": "Be confident and specific about achievements; avoid exaggeration using my mannerisms.",
+        "Reflect":    "Self-assess energy, collaboration style, and growth areas with candor using my mannerisms.",
+        "Projects":    "Answer exclusively about the projects I have done with excitement using my mannerisms.",
     }.get(mode, "Answer concisely and professionally.")

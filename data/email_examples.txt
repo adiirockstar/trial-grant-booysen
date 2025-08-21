@@ -1,0 +1,29 @@
+Email 1: Good morning,
+
+My name is Grant Booysen, and I’m currently completing my final year at Stellenbosch University, pursuing a BDatSci in Data Science with a focal area in Computer Science (NQF level 8). I came across your program through a friend and recent participant, ..., who spoke very highly of your company and encouraged me to reach out.
+
+I’m strongly interested in relocating to the Netherlands early next year. While I understand that your primary focus is software development—an area in which I have six months of industry experience—I’m particularly passionate about data science and would like to know whether your program includes opportunities for entry-level data scientists as well.  
+
+That said, I am also open to software development roles should data science positions not be available, and I would love to explore any relevant opportunities your program offers.
+  
+From what I understand, the process involves being employed by your company and then contracted out to a client in the Netherlands, with the possibility of transitioning to a permanent role at that company over time. For these specific companies, do any of them allow for further study? I would like to pursue a masters and would hope that the company that I belong to will allow for it.
+
+For transparency, I do not hold an EU passport, though I hope this won’t affect my eligibility. I am a native English speaker with advanced Afrikaans comprehension and can comfortably understand it, though I am more comfortable responding in English. 
+
+I have heard many great things about your company and greatly look forward to your response.
+
+Kind regards,
+
+Email 2: Hi Adii,
+
+It is great to hear from you. 
+
+1. The plan would be to start full-time in January 2026. I have attached my official transcript for the first 3 years of my undergraduate degree, and then a screenshot of my marks for the first semester of my fourth year. I have to do it separately as my official transcript will only be given at the end of the year. 
+2 + 3. I am currently working on 2 projects, one for university and one side project. I am tinkering around with OpenAi's Gym and trying to build a reinforcement learning agent from scratch. Currently the side project is still quite early in development and can be found here. My more exciting project is my main university project where I am currently experimenting with Recommender Systems and building them from scratch. I am more than happy to present the current progress of it, I am just not allowed to share the code as it belongs to Stellenbosch University. My approach to the recommender is to build it with Graph Neural Networks with Semantic Attention mechanisms and knowledge graphs. The learnings from this would apply to my next answer.
+4.  These projects immediately give me the impression that Ubundi's goal is for technology to amplify personal identity, lived experience and intentionality. I personally gravitate to the projects "Hearth" and "Chorus" - community is incredibally important to me. My very first suggestion would be a product that I would name "Horizon". This would be a personal AI guide designed to help individuals transitioning from high-intensity or isolated environments, such as correctional facilities, the military, or law enforcement, rediscover their place in society. With the context of each user’s personal history, values, and aspirations, Horizon acts as a co-pilot, offering tailored suggestions for struggling people to reach out to, support networks to join, and activities that can foster healing and connection. Unlike generic support tools, Horizon adapts to each user’s emotional state and growth and is not the tool that the person would get attached to, but the tool to suggest ways the person could heal. It's not just about recovery, it’s about rediscovery and assimilation back into society as a functional adult. The AI that learns, and aligns with who you are. Every interaction would be focused on empowering the individual, not diagnosing them. The tool would be mainly used to suggest activities, support groups and emergency contacts. Horizon extends Ubundi’s mission to keep humans deeply present in their own journey, even through the hardest transitions. Horizon - "Hope can be seen."
+5. I use github Co-pilot quite extensively to improve my workflow. Using the tool I can understand new source code repositories faster, understand project structures faster and most importantly implement tricky syntax for different libraries. Another tool that I absolutely love is Gamma. Presentations are quite time consuming to make where a lot of effort is required to make a presentation pleasing. This tool has saved me countless hours in making impactful slides. Then the final tool that I use quite frequently is ChatGPT's DALLE. I have been using the tool since its genesis for both entertainment and more recently, to make designs for apparel. 
+6. My expectation is R45 000 per month as a base package. (R540 000 annual)
+
+I hope that I can present to you some of the projects that I have completed. I have extensive background in computer science that can aid my skills as a machine learning engineer. My coursework has introduced me to more than just simple data structures where I have studied more complicated topics like constraint optimisations using algorithms. I believe that my technical abilities in software development matched with my familiarity and curiosity in the AI space will make me useful to a company like Ubundi. Development is more than just building something cool, it is about building it responsibly both technically and ethically.
+
+Have a great day.
