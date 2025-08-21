@@ -14,17 +14,12 @@ def load_frontend():
         st.header("Settings")
         mode = st.radio(
             "Mode",
-            ["Interview", "Story", "FastFacts", "HumbleBrag", "Reflect"],
+            ["Interview", "Story", "FastFacts", "HumbleBrag", "Reflect", "Projects"],
             index=0
         )
         st.caption("Mode tweaks tone & structure of answers.")
 
-
-    # # --------- Main: Title + Resources ---------
-    st.title("🗂️ Personal Codex Agent")
-    st.caption("Ask about my work, skills, interests and values — grounded in my own docs.")
-
-    with st.expander("🔗 Fun links about me"):
+    with st.expander("🔗 Fun links about me to ask me more about"):
         res = cfg.get("resources", {})
         if res:
             if res.get("spotify_playlist"):

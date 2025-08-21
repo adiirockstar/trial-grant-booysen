@@ -1,0 +1,23 @@
+To demonstrate the build flow with my use of AI integration here is the progression of prompts that I gave both ChatGPT and Claude.
+Due to only being able to use the free tiers I had to switch between using both.
+
+Prompt history and progression:
+
+1. Given these specifications, How do I build this: "Ubundi Trial Project: Build a Personal Codex Agent Objective Build a context-aware agent that can answer questions about you as a candidate—based on documents and data you’ve created. This trial tests your ability to work AI-natively, structure unstructured data, and build something useful and expressive in a short time.
+(I then provide the entire document as a reference for ChatGPT). Make suggestions as to what features would aid this project. 
+
+2. Provide a start up template that will allow me to fill in parts of the project at a time.
+
+3. The provided libraries that you (ChatGPT) gave require subscription services for the API keys. Is the chatOpenAi model free to use? I need to use a stack thats free.
+
+4. How do I parse data from the following document types into the embedder: docx, pdf, md, txt. Write me the code to load these resources from ./data. and collectively add it to the context of the prompt. Give me just the code to do so.
+
+5. I want to know how to do the following: Make radio buttons on the frontend to configure modes. Put in additional resources that can be fun facts about me like a link to my spotify playlist, chess.com username, and a newspaper article about me as a child. How do I integrate it into the app? Give me a clear step by step process on how to add features - explain it as simply as possible. Then provide me example code as to how to implement the features.
+
+6. I want to write a configuration file to load additional resources like links for the above. How would I use configParser or pyyaml in this context?
+
+7. I am trying to deploy my app to streamlit but I am having import issues. I need to be able to load the relative directory that I have specified for myu .env file for Streamlit but the files are on the repo.
+from sentence_transformers import SentenceTransformer import faiss from ollama import Client import os 
+
+8. I noticed that the local version of llama does not offer an integration for cloud services with an API key. Will it work for streamlit? If not please suggest another service and apply the necessary changes to my current code base to load the new service.
+

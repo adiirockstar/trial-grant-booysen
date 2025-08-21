@@ -18,6 +18,7 @@ def mode_instructions(mode: str) -> str:
         "FastFacts":  "Answer in tight bullet points (max 5).",
         "HumbleBrag": "Be confident and specific about achievements; avoid exaggeration.",
         "Reflect":    "Self-assess energy, collaboration style, and growth areas with candor.",
+        "Projects":    "Answer exclusively about the projects I have done with excitement.",
     }.get(mode, "")
 
 

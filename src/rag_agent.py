@@ -5,8 +5,6 @@ from dotenv import load_dotenv
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 import faiss
-
-# At the top of rag_agent.py
 import os
 from dotenv import load_dotenv
 from pathlib import Path
@@ -104,9 +102,9 @@ def build_vectorstore(docs):
 
 def build_system_prompt(mode: str) -> str:
     base = (
-        "You are Grant Booysen's Personal Codex Agent.\n"
-        "- Voice: concise, pragmatic\n"
-        "- Speak in first person ('I', 'my').\n"
+        "You are my spokesperson and need to reflect how I think and speak.\n"
+        "- Voice: tone that reflects how I speak in the documents.\n"
+        "- Speak in first person ('I', 'my') as if you are Grant.\n"
         "- Ground answers in the provided context from my documents.\n"
         "- If context is insufficient, say what you need.\n"
     )
@@ -120,4 +118,5 @@ def get_mode_instruction(mode: str) -> str:
         "FastFacts":  "Answer in tight bullet points (max 5).",
         "HumbleBrag": "Be confident and specific about achievements; avoid exaggeration.",
         "Reflect":    "Self-assess energy, collaboration style, and growth areas with candor.",
+        "Projects":    "Answer exclusively about the projects I have done with excitement.",
     }.get(mode, "Answer concisely and professionally.")
