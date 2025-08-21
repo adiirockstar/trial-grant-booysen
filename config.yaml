@@ -1,0 +1,8 @@
+resources:
+  spotify_playlist: "https://open.spotify.com/playlist/6sJsm7L2BibHUX0vxbrtoZ?si=QUrqQj4uREqHAtQqCUDTfQ&pt=50f61845be70680afdf76674f5a0eab0&pi=Y9cekgyyRjCCI"
+  chess_username: "wavy_slimshady"
+  chess_profile: "https://link.chess.com/friend/TyGx2n"
+  karate_achievements:
+    - "https://www.citizen.co.za/rosebank-killarney-gazette/sports-news/local-sports/2014/07/03/dorfman-team-bags-medals/"
+    - "https://www.citizen.co.za/sandton-chronicle/sports-news/2018/01/09/parktown-dojo-shakes-world-order/"
+    - "https://dorfmankarate.co.za/dorfman-karate-tops-medals-table-recent-youth-senior-kwf-sa-champs/"
