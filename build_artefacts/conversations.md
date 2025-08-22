@@ -707,3 +707,457 @@ def load_documents(data_dir):
             print(f"Error loading DOCX {file_path}: {e}")
     
     return docs
+
+
+
+
+
+
+
+6. Live session management
+**Prompt**
+I want to build a live session management for storing and retraining my chatbot. I want the user to be able to drop files into the 
+session storage from the side bar, refresh the question and see the result. Explain to me how the session management would work in this context.
+Provide source code as to how to build it.
+
+**Response**
+I'll create an upload feature in the sidebar that allows you to add more documents to your corpus. This will require updating both the frontend and the main app to handle file uploads and rebuild the vector store.I've created a comprehensive document upload feature for your RAG system. Here's what I've added:
+
+## New Features:
+
+### 1. **Upload Section in Sidebar**
+- File uploader supporting TXT, PDF, DOCX, and Markdown files
+- Multiple file upload capability
+- Progress indicators and success/error messages
+- File validation (size limits, supported formats)
+
+### 2. **Data Management**
+- Current document counter
+- "Show Current Files" button to list all documents with sizes
+- "Refresh Knowledge Base" button to reload the vector store
+- File statistics display
+
+### 3. **Smart Cache Management**
+- Uses session state to track when new documents are uploaded
+- Automatically refreshes the agent when new files are added
+- Cache invalidation system to ensure new documents are processed
+
+### 4. **Enhanced User Experience**
+- Quick question buttons for common queries
+- Current mode display
+- Feedback buttons
+- Tips section at the bottom
+- Better error handling and user guidance
+
+## Key Technical Changes:
+
+1. **Frontend (`design.py`)**:
+   - Added file uploader with validation
+   - Document management interface
+   - Returns both mode and upload status
+
+2. **Main App**:
+   - Cache key system for agent reloading
+   - Better error messages and guidance
+   - Enhanced UI with quick buttons and tips
+
+3. **Helper Functions**:
+   - Support for multiple file formats (TXT, PDF, DOCX, MD)
+   - File validation and statistics
+   - Better error handling for document loading
+
+## Usage:
+
+1. **Upload Documents**: Use the sidebar to select and upload files
+2. **Automatic Processing**: The system automatically saves files and rebuilds the knowledge base
+3. **Immediate Availability**: New documents are immediately available for queries
+4. **Management**: View current files, refresh the system, or clear cache as needed
+
+## Required Dependencies:
+You may need to install additional packages:
+```bash
+pip install PyPDF2 python-docx
+```
+
+This creates a dynamic system where users can continuously expand Grant's knowledge base by uploading new documents through the web interface!
+
+**final code snippet**
+from groq import Groq
+import os
+from dotenv import load_dotenv
+from pathlib import Path
+from sentence_transformers import SentenceTransformer
+import faiss
+import streamlit as st
+
+# Load environment variables
+loaded_env = False
+api_key = None
+
+# Try Streamlit secrets first
+try:
+    api_key = st.secrets["GROQ_API_KEY"]
+    loaded_env = True
+    print("Loaded API key from Streamlit secrets")
+except:
+    print("Could not load API key from Streamlit secrets")
+
+# Fallback to .env file
+if not loaded_env:
+    env_path = Path(__file__).parent.parent / '.env'
+    if env_path.exists():
+        load_dotenv(env_path)
+        api_key = os.getenv('GROQ_API_KEY')
+        print(f"Loaded API key from .env: {api_key[:10]}..." if api_key else "No API key found in .env")
+    else:
+        print("No .env file found")
+
+# Initialize embedder
+embedder = None
+try:
+    embedder = SentenceTransformer("all-MiniLM-L6-v2")
+    print("Successfully loaded embedder")
+except Exception as e:
+    print(f"Failed to load embedder: {e}")
+
+def create_agent(vectorstore_data):
+    """Create agent using Groq's Llama with in-memory document support"""
+    if vectorstore_data is None or vectorstore_data[0] is None:
+        return lambda question, mode="Interview": "Sorry, the knowledge base is not available. Please upload some documents first."
+    
+    index, texts = vectorstore_data
+    print(f"Agent created with {len(texts)} documents in knowledge base")
+    
+    def agent(question: str, mode: str = "Interview") -> str:
+        # Check API key
+        groq_api_key = api_key or os.getenv("GROQ_API_KEY")
+        if not groq_api_key:
+            return "❌ Please configure GROQ_API_KEY in Streamlit secrets or environment variables"
+        
+        if embedder is None:
+            return "❌ Text embedder not available. Please check your setup."
+        
+        try:
+            # Initialize Groq client
+            groq_client = Groq(api_key=groq_api_key)
+            
+            # Search for relevant documents
+            q_emb = embedder.encode([question])
+            D, I = index.search(q_emb.astype('float32'), k=5)  # Get top 5 most relevant chunks
+            
+            # Get context from relevant documents
+            relevant_texts = []
+            for i in I[0]:
+                if i < len(texts) and D[0][len(relevant_texts)] < 1.5:  # Distance threshold
+                    relevant_texts.append(texts[i])
+                if len(relevant_texts) >= 3:  # Limit context size
+                    break
+            
+            context = "\n\n".join(relevant_texts) if relevant_texts else "No relevant context found."
+            
+            # Build prompt with mode-specific instructions
+            system_prompt = build_system_prompt(mode)
+            mode_instruction = get_mode_instruction(mode)
+            
+            prompt = f"""{system_prompt}
+
+Mode Instructions: {mode_instruction}
+
+Context from Grant's documents:
+{context}
+
+Question: {question}
+
+Answer as Grant in first person, based on the context provided:"""
+            
+            # Use Groq's Llama model
+            response = groq_client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "You are Grant Booysen's AI assistant. Respond in first person as Grant, based on the provided context."},
+                    {"role": "user", "content": prompt}
+                ],
+                model="llama3-8b-8192",
+                max_tokens=600,
+                temperature=0.7
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            print(f"Agent error: {str(e)}")
+            return f"❌ Sorry, I encountered an error: {str(e)}"
+    
+    return agent
+
+def build_vectorstore(docs):
+    """Build FAISS vector store from documents (works with in-memory docs)"""
+    if not docs:
+        print("No documents provided to build_vectorstore")
+        return None, []
+    
+    if embedder is None:
+        print("Embedder not available for vectorstore")
+        return None, []
+    
+    try:
+        # Extract text content from documents
+        texts = []
+        for doc in docs:
+            if hasattr(doc, 'page_content'):
+                # Split long documents into chunks
+                content = doc.page_content
+                chunk_size = 1000
+                overlap = 200
+                
+                if len(content) <= chunk_size:
+                    texts.append(content)
+                else:
+                    # Split into overlapping chunks
+                    for i in range(0, len(content), chunk_size - overlap):
+                        chunk = content[i:i + chunk_size]
+                        if len(chunk.strip()) > 50:  # Minimum chunk size
+                            texts.append(chunk)
+            else:
+                print(f"Document missing page_content attribute: {doc}")
+        
+        if not texts:
+            print("No valid text content extracted from documents")
+            return None, []
+        
+        print(f"Processing {len(texts)} text chunks for vector store")
+        
+        # Create embeddings
+        embeddings = embedder.encode(texts, show_progress_bar=True)
+        
+        # Build FAISS index
+        dim = embeddings.shape[1]
+        index = faiss.IndexFlatL2(dim)
+        index.add(embeddings.astype('float32'))
+        
+        print(f"Successfully built vector store with {len(texts)} chunks")
+        return index, texts
+        
+    except Exception as e:
+        print(f"Error building vector store: {e}")
+        return None, []
+
+def build_system_prompt(mode: str) -> str:
+    base = (
+        "You are Grant Booysen's Personal AI Assistant.\n"
+        "Key instructions:\n"
+        "- Respond in first person as Grant ('I', 'my', 'me')\n"
+        "- Be conversational and authentic\n"
+        "- Base answers on the provided context from Grant's documents\n"
+        "- If context is insufficient, acknowledge what you don't know\n"
+        "- Stay true to Grant's voice and experiences\n"
+    )
+    return base + f"\nCurrent Response Mode: {mode}\n"
+
+def get_mode_instruction(mode: str) -> str:
+    """Get specific instructions for each response mode"""
+    instructions = {
+        "Interview": "Answer concisely and professionally. Focus on skills, achievements, and impact. Be direct and clear.",
+        "Story": "Tell engaging stories with specific examples. Use narrative structure with context, action, and results.",
+        "FastFacts": "Respond with concise bullet points (maximum 5). Each point should be specific and actionable.",
+        "HumbleBrag": "Be confident about achievements while staying authentic. Highlight specific accomplishments and their impact.",
+        "Reflect": "Be introspective and honest. Discuss growth areas, learning experiences, and self-awareness candidly.",
+    }
+    return instructions.get(mode, "Answer in a helpful and authentic manner.")
+
+# Helper function for testing
+def test_agent_setup():
+    """Test if the agent can be properly initialized"""
+    try:
+        # Test API key
+        if not (api_key or os.getenv("GROQ_API_KEY")):
+            return False, "GROQ_API_KEY not configured"
+        
+        # Test embedder
+        if embedder is None:
+            return False, "Embedder not loaded"
+        
+        # Test Groq client
+        groq_client = Groq(api_key=api_key or os.getenv("GROQ_API_KEY"))
+        
+        return True, "Agent setup successful"
+        
+    except Exception as e:
+        return False, f"Setup error: {str(e)}"
+
+    import streamlit as st
+import os
+import yaml
+from pathlib import Path
+
+def load_config():
+    config_path = os.path.join(os.path.dirname(__file__), "../config.yaml")
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
+
+def process_uploaded_file(uploaded_file):
+    """Process uploaded file and extract text content"""
+    try:
+        file_extension = uploaded_file.name.split('.')[-1].lower()
+        
+        if file_extension in ['txt', 'md']:
+            # Text files
+            content = str(uploaded_file.read(), "utf-8")
+            
+        elif file_extension == 'pdf':
+            # PDF files - you'll need PyPDF2
+            try:
+                import PyPDF2
+                import io
+                
+                pdf_reader = PyPDF2.PdfReader(io.BytesIO(uploaded_file.read()))
+                content = ""
+                for page in pdf_reader.pages:
+                    content += page.extract_text() + "\n"
+                    
+            except ImportError:
+                st.error("PyPDF2 not available. PDF upload disabled.")
+                return None
+                
+        elif file_extension == 'docx':
+            # DOCX files - you'll need python-docx
+            try:
+                from docx import Document
+                import io
+                
+                doc = Document(io.BytesIO(uploaded_file.read()))
+                content = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+                
+            except ImportError:
+                st.error("python-docx not available. DOCX upload disabled.")
+                return None
+        else:
+            st.error(f"Unsupported file type: {file_extension}")
+            return None
+            
+        # Create document object
+        class UploadedDocument:
+            def __init__(self, content, filename):
+                self.page_content = content
+                self.metadata = {"source": f"uploaded_{filename}", "type": "uploaded"}
+        
+        return UploadedDocument(content, uploaded_file.name)
+        
+    except Exception as e:
+        st.error(f"Error processing {uploaded_file.name}: {str(e)}")
+        return None
+
+def load_frontend():
+    cfg = load_config() if os.path.exists("config.yaml") else {}
+    
+    # Initialize session state for uploaded documents
+    if 'uploaded_docs' not in st.session_state:
+        st.session_state.uploaded_docs = []
+    if 'upload_counter' not in st.session_state:
+        st.session_state.upload_counter = 0
+    
+    # --------- Sidebar: Settings and Upload ---------
+    with st.sidebar:
+        st.header("⚙️ Settings")
+        
+        # Mode selection
+        mode = st.radio(
+            "Response Mode",
+            ["Interview", "Story", "FastFacts", "HumbleBrag", "Reflect"],
+            index=0
+        )
+        st.caption("Mode tweaks tone & structure of answers.")
+        
+        st.divider()
+        
+        # Document upload section
+        st.header("📁 Add Training Data")
+        st.caption("Upload documents to expand Grant's knowledge base")
+        st.info("💡 Files are processed in-memory for this session")
+        
+        # File uploader
+        uploaded_files = st.file_uploader(
+            "Choose files",
+            type=['txt', 'pdf', 'docx', 'md'],
+            accept_multiple_files=True,
+            help="Supported formats: TXT, PDF, DOCX, Markdown",
+            key=f"file_uploader_{st.session_state.upload_counter}"
+        )
+        
+        # Process uploaded files
+        if uploaded_files:
+            new_docs = []
+            
+            for uploaded_file in uploaded_files:
+                # Check if already processed
+                already_uploaded = any(
+                    doc.metadata.get("source") == f"uploaded_{uploaded_file.name}" 
+                    for doc in st.session_state.uploaded_docs
+                )
+                
+                if not already_uploaded:
+                    doc = process_uploaded_file(uploaded_file)
+                    if doc:
+                        new_docs.append(doc)
+                        st.success(f"✅ Processed: {uploaded_file.name}")
+                else:
+                    st.info(f"📄 Already uploaded: {uploaded_file.name}")
+            
+            if new_docs:
+                st.session_state.uploaded_docs.extend(new_docs)
+                # Increment counter to force re-initialization
+                if 'docs_changed' not in st.session_state:
+                    st.session_state.docs_changed = 0
+                st.session_state.docs_changed += 1
+                
+                st.success(f"🎉 Added {len(new_docs)} new documents!")
+        
+        # Show document statistics
+        total_original = len([f for f in os.listdir("data") if f.lower().endswith(('.txt', '.pdf', '.docx', '.md'))]) if os.path.exists("data") else 0
+        total_uploaded = len(st.session_state.uploaded_docs)
+        total_docs = total_original + total_uploaded
+        
+        st.metric("📊 Total Documents", total_docs, delta=total_uploaded if total_uploaded > 0 else None)
+        
+        if total_uploaded > 0:
+            st.write("**Uploaded this session:**")
+            for doc in st.session_state.uploaded_docs:
+                filename = doc.metadata["source"].replace("uploaded_", "")
+                content_length = len(doc.page_content)
+                st.write(f"• {filename} ({content_length:,} chars)")
+        
+        st.divider()
+        
+        # Session management
+        st.header("🔄 Session Management")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🗑️ Clear Uploads"):
+                st.session_state.uploaded_docs = []
+                st.session_state.docs_changed = st.session_state.get('docs_changed', 0) + 1
+                st.success("Cleared uploaded documents!")
+                st.rerun()
+        
+        with col2:
+            if st.button("🔄 Refresh"):
+                st.session_state.docs_changed = st.session_state.get('docs_changed', 0) + 1
+                st.success("Refreshing knowledge base!")
+                st.rerun()
+        
+        # Download processed content (for backup)
+        if st.session_state.uploaded_docs:
+            if st.button("💾 Download Session Data"):
+                combined_content = "\n\n---\n\n".join([
+                    f"FILE: {doc.metadata['source']}\n\n{doc.page_content}"
+                    for doc in st.session_state.uploaded_docs
+                ])
+                
+                st.download_button(
+                    label="📄 Download All Uploaded Content",
+                    data=combined_content,
+                    file_name="uploaded_session_data.txt",
+                    mime="text/plain"
+                )
+    
+    # Return mode and uploaded documents
+    return mode, st.session_state.uploaded_docs

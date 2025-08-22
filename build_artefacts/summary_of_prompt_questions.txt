@@ -21,3 +21,6 @@ from sentence_transformers import SentenceTransformer import faiss from ollama i
 
 8. I noticed that the local version of llama does not offer an integration for cloud services with an API key. Will it work for streamlit? If not please suggest another service and apply the necessary changes to my current code base to load the new service.
 
+9. I want to build a live session management for storing and retraining my chatbot. I want the user to be able to drop files into the 
+session storage from the side bar, refresh the question and see the result. Explain to me how the session management would work in this context.
+Provide source code as to how to build it.
